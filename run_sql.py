@@ -1,4 +1,4 @@
-import sqlite3, sys, os.path
+import sqlite3, sys
 
 def sandbox(db):
     pass  # Feel free to modify the code in this function.
