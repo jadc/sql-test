@@ -1,0 +1,109 @@
+CREATE TABLE musicPerson ( 
+    pid INTEGER, 
+    name TEXT, 
+    birthYear INTEGER,
+
+    PRIMARY key(pid) 
+);
+
+CREATE TABLE singer ( 
+    pid INTEGER NOT NULL, 
+
+    PRIMARY key(pid), 
+    FOREIGN key(pid) REFERENCES musicPerson(pid) ON DELETE CASCADE
+);
+
+CREATE TABLE singerOf (
+    pid INTEGER,
+    role TEXT,
+    title TEXT,
+    release_year CHAR(4),
+
+    PRIMARY key(pid, title, release_year),
+    FOREIGN key(pid) REFERENCES singer(pid) ON DELETE CASCADE,
+    FOREIGN key(title, release_year) REFERENCES music(title, release_year)
+);
+
+CREATE TABLE music (
+    title TEXT,
+    release_year INTEGER,
+    runtime FLOAT,
+
+    PRIMARY key(title, release_year)
+);
+
+CREATE TABLE recommend (
+    title1 TEXT,
+    release_year1 CHAR(4),
+    title2 TEXT,
+    release_year2 CHAR(4),
+    score INTEGER,
+
+    PRIMARY key(title1, release_year1, title2, release_year2),
+    FOREIGN key(title1, release_year1) REFERENCES music(title, release_year),
+    FOREIGN key(title2, release_year2) REFERENCES music(title, release_year)
+);
+
+CREATE TABLE genres (
+    genre TEXT,
+
+    PRIMARY key(genre)
+);
+
+CREATE TABLE mgenre (
+    title TEXT,
+    release_year CHAR(4),
+    genre TEXT,
+
+    PRIMARY key(title, release_year, genre),
+    FOREIGN key(title, release_year) REFERENCES music(title, release_year),
+    FOREIGN key(genre) REFERENCES genres(genre)
+);
+
+CREATE TABLE crew ( 
+    pid INTEGER, 
+
+    PRIMARY key(pid), 
+    FOREIGN key(pid) REFERENCES musicPerson(pid)
+);
+
+CREATE TABLE jobs (
+    job TEXT,
+
+    PRIMARY key(job)
+);
+
+CREATE TABLE crewOf (
+    job TEXT,
+    crewid INTEGER,
+    title TEXT,
+    release_year CHAR(4),
+
+    PRIMARY key(job),
+    FOREIGN key(job) REFERENCES jobs(job),
+    FOREIGN key(crewid) REFERENCES crew(pid),
+    FOREIGN key(title, release_year) REFERENCES music(title, release_year)
+);
+
+CREATE TABLE E2 (
+    a1 INTEGER,
+    title TEXT,
+    release_year CHAR(4),
+
+    a21 INTEGER,
+    a22 INTEGER,
+    a11 INTEGER NOT NULL,
+
+    PRIMARY key(a21, a11)
+    FOREIGN key(a11) REFERENCES E1(a11) ON DELETE CASCADE,
+    FOREIGN key(title, release_year) REFERENCES music(title, release_year)
+);
+
+CREATE TABLE E1 (
+    a11 INTEGER,
+    a12 INTEGER,
+    job TEXT,
+
+    FOREIGN key(job) REFERENCES jobs(job),
+    PRIMARY key(a11)
+);
