@@ -1,40 +1,39 @@
 #!/usr/bin/env python
 import sqlite3, sys
 
-##################
-
-def sandbox(db):
-    pass  # Feel free to modify the code in this function.
-
-##################
-
-# e.g. ex(db, "INSERT INTO music VALUES ('my song', 2020, 60)")
-def ex(db, query):
-    query = ' '.join(query.split())
-    try: return db.execute( query )
-    except Exception as e: print(f"!!! Error in: '{query}'\n--> {e.__class__.__name__}: {e}"); exit(1);
-
-# e.g. preview(db, 'music')
-def preview(db, table):
-    print( table, ex(db, 'SELECT * FROM ' + table ).fetchall() )
-
 args = ['PRAGMA foreign_keys=ON']
 if __name__ == '__main__':
-    if len(sys.argv) == 2:
-        try:
-            db = sqlite3.connect(":memory:").cursor()
-            for arg in args: db.execute(arg)
+    if len(sys.argv) > 1:
+        db = sqlite3.connect(":memory:").cursor()
+        for arg in args: db.execute(arg)
 
-            try:
-                with open(sys.argv[1], 'r') as sql_file:
-                    db.executescript(sql_file.read())
-                print(f"Created new database from '{sys.argv[1]}' in memory")
-                sandbox(db)
-                exit(0)
-            except Exception as e:
-                print(f"Failed to interpret '{sys.argv[1]}' as an SQL file\n{e.__class__.__name__}: {e}", file=sys.stderr)
+        # Bulk read first file
+        try: 
+            with open(sys.argv[1], 'r') as sql_file:
+                db.executescript(sql_file.read())
+            print(f"Created new database from '{sys.argv[1]}' in memory")
         except FileNotFoundError as e:
-            print(f"{sys.argv[0]}: cannot access '{sys.argv[1]}': No such file", file=sys.stderr)
+            print(f"{sys.argv[0]}: cannot access '{sys.argv[1]}': No such file", file=sys.stderr); 
+            exit(1)
+        except Exception as e:
+            print(f"Failed to interpret '{sys.argv[1]}' as an SQL file\n{e.__class__.__name__}: {e}", file=sys.stderr); 
+            exit(1)
+
+        # Read sandboxes
+        for file in sys.argv[2:]:
+            try:
+                with open(file, 'r') as sql_file:
+                    queries = [x for x in ' '.join(sql_file.read().split()).split(';') if x]
+                    for query in queries:
+                        print(f"\n==> '{query}'")
+                        cursor = db.execute(query)
+                        for row in cursor: print(row)
+            except FileNotFoundError as e:
+                print(f"{sys.argv[0]}: cannot access '{file}': No such file", file=sys.stderr);
+            except Exception as e:
+                print(f"Error while reading '{file}'\n{e.__class__.__name__}: {e}", file=sys.stderr);
+
+        exit(0)
     else:
-        print(f"Usage: {sys.argv[0]} <*.sql>", file=sys.stderr)
+        print(f"Usage: {sys.argv[0]} <*.sql> [*.sql, ...]", file=sys.stderr)
     exit(1)
