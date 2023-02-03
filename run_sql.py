@@ -22,12 +22,21 @@ if __name__ == '__main__':
         # Read sandboxes
         for file in sys.argv[2:]:
             try:
+                lines = []
                 with open(file, 'r') as sql_file:
-                    queries = [x for x in ' '.join(sql_file.read().split()).split(';') if x]
-                    for query in queries:
-                        print(f"\n==> '{query}'")
-                        cursor = db.execute(query)
-                        for row in cursor: print(row)
+                    # Read lines except comments
+                    while True:
+                        line = sql_file.readline()
+                        if(not line.startswith('--')): lines.append(line)
+                        if(not line): break
+
+                # Execute lines
+                queries = [x for x in ' '.join(lines).split(';') if x and not x.isspace()]
+                for query in queries:
+                    print(f"\n==> '{' '.join(query.split())}'")
+                    cursor = db.execute(query)
+                    for row in cursor: print(row)
+
             except FileNotFoundError as e:
                 print(f"{sys.argv[0]}: cannot access '{file}': No such file", file=sys.stderr);
             except Exception as e:
